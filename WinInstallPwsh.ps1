@@ -37,7 +37,7 @@ Invoke-WebRequest -Uri $vcInstallerUrl -OutFile "$env:TEMP\dotnet-install.ps1"
 try {
     & "$env:TEMP\dotnet-install.ps1" -Channel 5.0 -Version latest -Runtime aspnetcore 
     Write-Output "dotnet core 5.0 aspenetcore installed"
-    & "$env:TEMP\dotnet-install.ps1" -Channel 6.0 -Version latest -Runtime windowsdesktop 
+    & "$env:TEMP\dotnet-install.ps1" -Channel 5.0 -Version latest -Runtime windowsdesktop 
     Write-Output "dotnet core 5.0 desktopruntime installed"
     & "$env:TEMP\dotnet-install.ps1" -Channel 6.0 -Version latest -Runtime aspnetcore
     Write-Output "dotnet core 6.0 aspenetcore installed"
