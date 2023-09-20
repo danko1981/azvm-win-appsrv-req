@@ -1,14 +1,16 @@
+Set-ExecutionPolicy Bypass
+
 #####################################################################
 #INSTALL POWERSHELL 7 LTS
 #####################################################################
 #Generate dowload link for latest LTS release.
 $buildinfoUrl = 'https://aka.ms/pwsh-buildinfo-lts'
-Write-Verbose "`$buildinfoUrl`t$buildinfoUrl"
+Write-Output "`$buildinfoUrl`t$buildinfoUrl"
 $releaseTag = (Invoke-RestMethod -UseBasicParsing -Uri $buildinfoUrl -ErrorAction Stop -Verbose:$false).ReleaseTag
 $versionNumber = $releaseTag.trim("v")
 $architecture = "x64"
 $ZipUrl = "https://github.com/PowerShell/PowerShell/releases/download/$($releaseTag)/PowerShell-$($versionNumber)-win-$architecture.msi"
-Write-Host  $ZipUrl  
+Write-Output $ZipUrl  
 
 #Download the PowerShell 7 installer
 Invoke-WebRequest -Uri $ZipUrl -OutFile "$env:TEMP\PowerShell-7-x64.msi"
@@ -16,11 +18,39 @@ Invoke-WebRequest -Uri $ZipUrl -OutFile "$env:TEMP\PowerShell-7-x64.msi"
 #Install PowerShell 7
 try {
     Start-Process -Wait -FilePath "$env:TEMP\PowerShell-7-x64.msi" -ArgumentList "/qn" -PassThru  
-    Write-Host "Powershell $versionNumber installed"
+    Write-Output "Powershell $versionNumber installed"
 }
 catch {
-    Write-Host "Error while installing powershell $versionNumber"
+    Write-Output "Error while installing powershell $versionNumber"
 }
+
+#####################################################################
+#INSTALL Latest .NetCore
+#####################################################################
+# Define the URL for the .NetCore script installer
+$vcInstallerUrl = "https://dot.net/v1/dotnet-install.ps1"
+
+# Download the script
+Invoke-WebRequest -Uri $vcInstallerUrl -OutFile "$env:TEMP\dotnet-install.ps1"
+
+#Install .NetCore
+try {
+    & "$env:TEMP\dotnet-install.ps1" -Channel 5.0 -Version latest -Runtime aspnetcore 
+    Write-Output "dotnet core 5.0 aspenetcore installed"
+    & "$env:TEMP\dotnet-install.ps1" -Channel 6.0 -Version latest -Runtime windowsdesktop 
+    Write-Output "dotnet core 5.0 desktopruntime installed"
+    & "$env:TEMP\dotnet-install.ps1" -Channel 6.0 -Version latest -Runtime aspnetcore
+    Write-Output "dotnet core 6.0 aspenetcore installed"
+    & "$env:TEMP\dotnet-install.ps1" -Channel 6.0 -Version latest -Runtime windowsdesktop     
+    Write-Output "dotnet core 6.0 desktopruntime installed"
+}
+catch {
+    Write-Output "Error while installing .NetCore: $_"
+}
+
+#list installed:
+Write-Output "Otuput of query: dotnet --list-runtimes"
+& dotnet --list-runtimes
 
 #####################################################################
 #INSTALL Latest VCRedist
@@ -37,7 +67,7 @@ try {
     Write-Host "Visual C++ Redistributable successfully Installed "
 }
 catch {
-    Write-Host "Error while installing Visual C++ Redistributable"
+    Write-Host "Error while installing Visual C++ Redistributable: $_"
 }
 
 #####################################################################
