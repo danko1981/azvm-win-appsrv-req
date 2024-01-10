@@ -25,27 +25,65 @@ catch {
 #####################################################################
 #INSTALL Latest .NetCore
 #####################################################################
-# Define the URL for the .NetCore script installer
-$vcInstallerUrl = "https://dot.net/v1/dotnet-install.ps1"
+# Define the URL for the .NetCore 5 installer
+$vc5InstallerUrl = "https://download.visualstudio.microsoft.com/download/pr/05726c49-3a3d-4862-9ff8-0660d9dc3c52/71c295f9287faad89e2d3233a38b44fb/dotnet-hosting-5.0.17-win.exe"
+$vc6InstallerUrl = "https://download.visualstudio.microsoft.com/download/pr/2d151460-8311-4452-9a2e-dfb1447f2e9b/15c599ea357a0e4dc333d28b351f1c6c/dotnet-hosting-6.0.25-win.exe"
+$vc6dInstallerUrl = "https://download.visualstudio.microsoft.com/download/pr/dde9eb7e-8ea8-494a-9b04-5db26c7740e2/43d5050cfa63b7323749c7e56fedd3ac/windowsdesktop-runtime-6.0.25-win-x64.exe"
 
-# Download the script
-Write-Output "$vcInstallerUrl - download started [...]"
-Invoke-WebRequest -Uri $vcInstallerUrl -OutFile "$env:TEMP\dotnet-install.ps1"
-Write-Output "Installing Latest .NetCore version 5 and 6 [...]"
-#Install .NetCore
+# Download the NetCores installer
+Invoke-WebRequest -Uri $vc5InstallerUrl -OutFile "$env:TEMP\dotnet-hosting-5.0.17-win.exe"
+Invoke-WebRequest -Uri $vc6InstallerUrl -OutFile "$env:TEMP\dotnet-hosting-6.0.24-win.exe"
+Invoke-WebRequest -Uri $vc6dInstallerUrl -OutFile "$env:TEMP\windowsdesktop-runtime-6.0.24-win-x64.exe"
+
+#Install NetCore 5 Hostingbundle
+Write-Output "Installing .Netcore 5 Hostingbundle [...]"
 try {
-    & "$env:TEMP\dotnet-install.ps1" -Channel 5.0 -Version latest -Runtime aspnetcore
-    Write-Output "dotnet core 5.0 aspenetcore installed"
-    & "$env:TEMP\dotnet-install.ps1" -Channel 5.0 -Version latest -Runtime windowsdesktop 
-    Write-Output "dotnet core 5.0 desktopruntime installed"
-    & "$env:TEMP\dotnet-install.ps1" -Channel 6.0 -Version latest -Runtime aspnetcore
-    Write-Output "dotnet core 6.0 aspenetcore installed"
-    & "$env:TEMP\dotnet-install.ps1" -Channel 6.0 -Version latest -Runtime windowsdesktop     
-    Write-Output "dotnet core 6.0 desktopruntime installed"
+    Start-Process -Wait -FilePath "$env:TEMP\dotnet-hosting-5.0.17-win.exe" -ArgumentList "/q /norestart" -PassThru  -ErrorAction Stop
+    Write-Output ".NetCore 5 Hostingbundle"
 }
 catch {
-    Write-Output "Error while installing .NetCore: $_"
+    Write-Output "Error while installing .NetCore 5 Hostingbundle"
 }
+
+Write-Output "Installing .Netcore 6 Hostingbundle [...]"
+try {
+    Start-Process -Wait -FilePath "$env:TEMP\dotnet-hosting-6.0.24-win.exe" -ArgumentList "/q /norestart" -PassThru  -ErrorAction Stop
+    Write-Output ".NetCore 6 Hostingbundle"
+}
+catch {
+    Write-Output "Error while installing .NetCore 6 Hostingbundle"
+}
+
+Write-Output "Installing .Netcore 6 Desktop Runtime [...]"
+try {
+    Start-Process -Wait -FilePath "$env:TEMP\windowsdesktop-runtime-6.0.24-win-x64.exe" -ArgumentList "/q /norestart" -PassThru  -ErrorAction Stop
+    Write-Output ".NetCore 6 Desktop Runtime"
+}
+catch {
+    Write-Output "Error while installing .NetCore 6 Desktop Runtime"
+}
+
+# Install dotnet via script. Not working well, to be verified
+# Define the URL for the .NetCore script installer
+#$vcInstallerUrl = "https://dot.net/v1/dotnet-install.ps1"
+# Download the script
+#Write-Output "$vcInstallerUrl - download started [...]"
+#Invoke-WebRequest -Uri $vcInstallerUrl -OutFile "$env:TEMP\dotnet-install.ps1"
+#Write-Output "Installing Latest .NetCore version 5 and 6 [...]"
+##Install .NetCore
+#try {
+#    & "$env:TEMP\dotnet-install.ps1" -Channel 5.0 -Version latest -Runtime aspnetcore
+#    Write-Output "dotnet core 5.0 aspenetcore installed"
+#    & "$env:TEMP\dotnet-install.ps1" -Channel 5.0 -Version latest -Runtime windowsdesktop 
+#    Write-Output "dotnet core 5.0 desktopruntime installed"
+#    & "$env:TEMP\dotnet-install.ps1" -Channel 6.0 -Version latest -Runtime aspnetcore
+#    Write-Output "dotnet core 6.0 aspenetcore installed"
+#    & "$env:TEMP\dotnet-install.ps1" -Channel 6.0 -Version latest -Runtime windowsdesktop     
+#    Write-Output "dotnet core 6.0 desktopruntime installed"
+#}
+#catch {
+#    Write-Output "Error while installing .NetCore: $_"
+#}
 
 #list installed:
 Write-Output "Otuput of query: dotnet --list-runtimes"
@@ -64,7 +102,7 @@ Invoke-WebRequest -Uri $vcInstallerUrl -OutFile "$env:TEMP\vc_redist.x64.exe"
 #Install VcRedistr
 Write-Output "Installing Latest VC++ Redistributable package [...]"
 try {
-    Start-Process -Wait -FilePath "$env:TEMP\vc_redist.x64.exe" -ArgumentList "/install /quiet /norestart" -PassThru  
+    Start-Process -Wait -FilePath "$env:TEMP\vc_redist.x64.exe" -ArgumentList "/install /quiet /norestart" -PassThru -ErrorAction Stop
     Write-Host "Visual C++ Redistributable successfully Installed "
 }
 catch {
@@ -80,7 +118,7 @@ Invoke-WebRequest -Uri https://aka.ms/installazurecliwindowsx64 -OutFile "$env:T
 
 Write-Output "Installing Latest AZ Command Line [...]"
 try {
-    Start-Process msiexec.exe -Wait -ArgumentList "/I $env:TEMP\AzureCLI.msi /quiet"
+    Start-Process msiexec.exe -Wait -ArgumentList "/I $env:TEMP\AzureCLI.msi /quiet" -PassThru -ErrorAction Stop
     Write-Host "AZ CLI x64 successfully Installed "
 }
 catch {
@@ -95,7 +133,7 @@ Write-Output "SQLCMD Utility v15 - download started [...]"
 Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?linkid=2230791 -OutFile "$env:TEMP\MsSqlCmdLnUtils.msi"
 try {
     Write-Output "Installing SQL Command Line Utility v.15 [...]"
-    Start-Process msiexec.exe -Wait -ArgumentList "/I $env:TEMP\MsSqlCmdLnUtils.msi /quiet" -ErrorAction Break
+    Start-Process msiexec.exe -Wait -ArgumentList "/I $env:TEMP\MsSqlCmdLnUtils.msi /quiet" -PassThru -ErrorAction Stop
     Write-Host "SQLCMD v15 successfully Installed "
 }
 catch {
@@ -135,4 +173,5 @@ Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpTracing -All
 Enable-WindowsOptionalFeature -Online -FeatureName IIS-BasicAuthentication -All
 Enable-WindowsOptionalFeature -Online -FeatureName IIS-WindowsAuthentication -All
 
-
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-ManagementScriptingTools -All
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-ManagementService -All
