@@ -27,18 +27,17 @@ catch {
 #####################################################################
 # Define the URL for the .NetCore 5 installer
 $vc5InstallerUrl = "https://download.visualstudio.microsoft.com/download/pr/05726c49-3a3d-4862-9ff8-0660d9dc3c52/71c295f9287faad89e2d3233a38b44fb/dotnet-hosting-5.0.17-win.exe"
-$vc6InstallerUrl = "https://download.visualstudio.microsoft.com/download/pr/2d151460-8311-4452-9a2e-dfb1447f2e9b/15c599ea357a0e4dc333d28b351f1c6c/dotnet-hosting-6.0.25-win.exe"
-$vc6dInstallerUrl = "https://download.visualstudio.microsoft.com/download/pr/dde9eb7e-8ea8-494a-9b04-5db26c7740e2/43d5050cfa63b7323749c7e56fedd3ac/windowsdesktop-runtime-6.0.25-win-x64.exe"
+$vc6InstallerUrl = "https://download.visualstudio.microsoft.com/download/pr/16e13e4d-a240-4102-a460-3f4448afe1c3/3d832f15255d62bee8bc86fed40084ef/dotnet-hosting-6.0.26-win.exe"
+$vc6dInstallerUrl = "https://download.visualstudio.microsoft.com/download/pr/dde9eb7e-8ea8-494a-9b04-5db26c7740e2/43d5050cfa63b7323749c7e56fedd3ac/windowsdesktop-runtime-6.0.26-win-x64.exe"
 
-# Download the NetCores installer
-Invoke-WebRequest -Uri $vc5InstallerUrl -OutFile "$env:TEMP\dotnet-hosting-5.0.17-win.exe"
-Invoke-WebRequest -Uri $vc6InstallerUrl -OutFile "$env:TEMP\dotnet-hosting-6.0.24-win.exe"
-Invoke-WebRequest -Uri $vc6dInstallerUrl -OutFile "$env:TEMP\windowsdesktop-runtime-6.0.24-win-x64.exe"
+Invoke-WebRequest -Uri $vc5InstallerUrl -OutFile "$env:TEMP\dotnet-hosting-5.0-win.exe"
+Invoke-WebRequest -Uri $vc6InstallerUrl -OutFile "$env:TEMP\dotnet-hosting-6.0-win.exe"
+Invoke-WebRequest -Uri $vc6dInstallerUrl -OutFile "$env:TEMP\windowsdesktop-runtime-6.0-win-x64.exe"
 
 #Install NetCore 5 Hostingbundle
 Write-Output "Installing .Netcore 5 Hostingbundle [...]"
 try {
-    Start-Process -Wait -FilePath "$env:TEMP\dotnet-hosting-5.0.17-win.exe" -ArgumentList "/q /norestart" -PassThru  -ErrorAction Stop
+    Start-Process -Wait -FilePath "$env:TEMP\dotnet-hosting-5.0-win.exe" -ArgumentList "/q /norestart" -PassThru  -ErrorAction Stop
     Write-Output ".NetCore 5 Hostingbundle"
 }
 catch {
@@ -47,7 +46,7 @@ catch {
 
 Write-Output "Installing .Netcore 6 Hostingbundle [...]"
 try {
-    Start-Process -Wait -FilePath "$env:TEMP\dotnet-hosting-6.0.24-win.exe" -ArgumentList "/q /norestart" -PassThru  -ErrorAction Stop
+    Start-Process -Wait -FilePath "$env:TEMP\dotnet-hosting-6.0-win.exe" -ArgumentList "/q /norestart" -PassThru  -ErrorAction Stop
     Write-Output ".NetCore 6 Hostingbundle"
 }
 catch {
@@ -56,7 +55,7 @@ catch {
 
 Write-Output "Installing .Netcore 6 Desktop Runtime [...]"
 try {
-    Start-Process -Wait -FilePath "$env:TEMP\windowsdesktop-runtime-6.0.24-win-x64.exe" -ArgumentList "/q /norestart" -PassThru  -ErrorAction Stop
+    Start-Process -Wait -FilePath "$env:TEMP\windowsdesktop-runtime-6.0-win-x64.exe" -ArgumentList "/q /norestart" -PassThru  -ErrorAction Stop
     Write-Output ".NetCore 6 Desktop Runtime"
 }
 catch {
