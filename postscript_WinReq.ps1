@@ -1,6 +1,63 @@
 #####################################################################
+#WINDOWS SERVER ROLES AND FEATURES
+#####################################################################
+Write-Output "Installing Windows Server roles."
+Write-Output "IIS web server and management tools"
+Install-WindowsFeature -Name Web-Server -IncludeManagementTools
+Write-Output "WAS"
+Install-WindowsFeature -Name WAS
+Write-Output "Web-WHC"
+Install-WindowsFeature -Name Web-WHC
+Write-Output "NET-Framework-45-Features"
+Install-WindowsFeature -Name NET-Framework-45-Features
+Write-Output "NET-HTTP-Activation"
+Install-WindowsFeature -Name NET-HTTP-Activation
+Write-Output "NET-Framework-45-ASPNET"
+Install-WindowsFeature -Name NET-Framework-45-ASPNET
+Write-Output "NET-WCF-TCP-Activation45"
+Install-WindowsFeature -Name NET-WCF-TCP-Activation45
+Write-Output "NET-WCF-HTTP-Activation45"
+Install-WindowsFeature -Name NET-WCF-HTTP-Activation45
+Write-Output "BITS-IIS-ExtWrite-Output"
+Install-WindowsFeature -Name BITS-IIS-ExtWrite-Output 
+Write-Output "done"
+
+Write-Output "Installing Features: IIS-HttpRedirect"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpRedirect -All
+Write-Output "Installing Features: IIS-ApplicationDevelopment"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-ApplicationDevelopment -All
+Write-Output "Installing Features: IIS-ASP"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-ASP -All
+Write-Output "Installing Features: IIS-ASPNET45"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-ASPNET45 -All
+Write-Output "Installing Features: NetFx4Extended-ASPNET45"
+Enable-WindowsOptionalFeature -Online -FeatureName NetFx4Extended-ASPNET45 -All
+Write-Output "Installing Features: IIS-NetFxExtensibility45"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-NetFxExtensibility45 -All
+Write-Output "Installing Features: IIS-WebSockets"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebSockets -All
+Write-Output "Installing Features: IIS-ApplicationInit"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-ApplicationInit -All
+Write-Output "Installing Features: IIS-LoggingLibraries"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-LoggingLibraries -All
+Write-Output "Installing Features: IIS-RequestMonitor"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-RequestMonitor -All
+Write-Output "Installing Features: IIS-HttpTracing"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpTracing -All
+Write-Output "Installing Features: IIS-BasicAuthentication"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-BasicAuthentication -All
+Write-Output "Installing Features: IIS-WindowsAuthentication"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-WindowsAuthentication -All
+Write-Output "Installing Features: IIS-ManagementScriptingTools"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-ManagementScriptingTools -All
+Write-Output "Installing Features: IIS-ManagementService"
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-ManagementService -All
+Write-Output "done"
+
+#####################################################################
 #INSTALL POWERSHELL 7 LTS
 #####################################################################
+
 #Generate dowload link for latest LTS release.
 $buildinfoUrl = 'https://aka.ms/pwsh-buildinfo-lts'
 Write-Output "`$buildinfoUrl`t$buildinfoUrl"
@@ -136,41 +193,20 @@ try {
     Write-Host "SQLCMD v15 successfully Installed "
 }
 catch {
-    Write-Host "Error while installing AZ CLI x64: $_"
+    Write-Host "Error while installing SQLCMD Utility v15: $_"
 }
 
-
 #####################################################################
-#WINDOWS SERVER ROLES AND FEATURES
+#INSTALL SQL ODBC Driver v17
 #####################################################################
-Write-Output "Installing Windows Server roles and features."
 
-Install-WindowsFeature -Name Web-Server -IncludeManagementTools
-Install-WindowsFeature -Name WAS
-Install-WindowsFeature -Name Web-WHC
-Install-WindowsFeature -Name NET-Framework-45-Features
-Install-WindowsFeature -Name NET-HTTP-Activation
-Install-WindowsFeature -Name NET-Framework-45-ASPNET
-Install-WindowsFeature -Name NET-WCF-TCP-Activation45
-Install-WindowsFeature -Name NET-WCF-HTTP-Activation45
-Install-WindowsFeature -Name BITS-IIS-Ext
-
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpRedirect -All
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-ApplicationDevelopment -All
-
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-ASP -All
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-ASPNET45 -All
-Enable-WindowsOptionalFeature -Online -FeatureName NetFx4Extended-ASPNET45 -All
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-NetFxExtensibility45 -All
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebSockets -All
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-ApplicationInit -All
-
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-LoggingLibraries -All
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-RequestMonitor -All
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpTracing -All
-
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-BasicAuthentication -All
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-WindowsAuthentication -All
-
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-ManagementScriptingTools -All
-Enable-WindowsOptionalFeature -Online -FeatureName IIS-ManagementService -All
+Write-Output "SSQL ODBC Driver v17- download started [...]"
+Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?linkid=2249004 -OutFile "$env:TEMP\msodbcsql.msi"
+try {
+    Write-Output "Installing SQL ODBC Driver v17 [...]"
+    Start-Process msiexec.exe -Wait -ArgumentList "/I $env:TEMP\msodbcsql.msi /quiet" -PassThru -ErrorAction Stop
+    Write-Host "SQL ODBC Driver v17 successfully Installed "
+}
+catch {
+    Write-Host "Error while installing SQL ODBC Driver v17: $_"
+}
