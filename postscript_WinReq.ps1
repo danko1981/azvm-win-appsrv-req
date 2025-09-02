@@ -144,57 +144,86 @@ Write-Output "--- Section 2: Complete ---"
 Write-Output ""
 
 #####################################################################
-# 3. INSTALL .NET 8 RUNTIMES
+# 3. INSTALL .NET RUNTIMES (MULTIPLE VERSIONS)
 #####################################################################
-Write-Output "--- Section 3: Installing .NET 8 Runtimes ---"
-$installSkipped = $false
-try {
-    # Check if dotnet command exists and if runtimes are already installed
-    $dotnetExists = Get-Command dotnet -ErrorAction SilentlyContinue
-    if ($dotnetExists) {
-        $dotnetRuntimes = & dotnet --list-runtimes
-        if ($dotnetRuntimes -match "Microsoft.AspNetCore.App 8." -and $dotnetRuntimes -match "Microsoft.NETCore.App 8." -and $dotnetRuntimes -match "Microsoft.WindowsDesktop.App 8.") {
-            Write-Output "[SKIP] .NET 8 Runtimes appear to be already installed."
-            & dotnet --list-runtimes
-            $installSkipped = $true
-        }
+Write-Output "--- Section 3: Installing .NET Runtimes ---"
+
+# Define the list of .NET installers. Each object has a specific 'CheckString' to verify if that runtime type is installed.
+$dotnetVersions = @(
+    @{
+        Version = "6.0 Hosting Bundle";
+        Url = "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/6.0.26/dotnet-hosting-6.0.26-win.exe";
+        FileName = "dotnet-hosting-6.0.26-win.exe";
+        MajorVersionString = "6.0."; 
+        CheckString = "Microsoft.AspNetCore.App"; # Hosting Bundles install the ASP.NET Core runtime
+    },
+    @{
+        Version = "8.0 Hosting Bundle";
+        Url = "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/8.0.19/dotnet-hosting-8.0.19-win.exe";
+        FileName = "dotnet-hosting-8.0.19-win.exe";
+        MajorVersionString = "8.0."; 
+        CheckString = "Microsoft.AspNetCore.App";
+    },
+     @{
+        Version = "8.0 Windows Desktop Runtime";
+        Url = "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/8.0.19/windowsdesktop-runtime-8.0.19-win-x64.exe";
+        FileName = "windowsdesktop-runtime-8.0.19-win-x64.exe";
+        MajorVersionString = "8.0.";
+        CheckString = "Microsoft.WindowsDesktop.App"; # This runtime has a different name
     }
-    
-    if (-not $installSkipped) {
-        # Using direct link to .NET 8 Hosting Bundle for stability.
-        $hostingBundleUrl = "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/8.0.19/dotnet-hosting-8.0.19-win.exe"
-        $hostingBundleFileName = "dotnet-hosting-8.0.19-win.exe"
-        $hostingBundlePath = Join-Path -Path $downloadDir -ChildPath $hostingBundleFileName
-        
-        # MANUAL DOWNLOAD OVERRIDE: Check if installer exists in C:\Temp first.
-        if (Test-Path -Path $hostingBundlePath) {
-            Write-Output "Local .NET installer found in $downloadDir. Skipping download."
-        }
-        else {
-            Write-Output "Downloading .NET 8 Hosting Bundle to $hostingBundlePath..."
-            Invoke-WebRequest -Uri $hostingBundleUrl -OutFile $hostingBundlePath -ErrorAction Stop
+)
+
+# Check for existing runtimes once before starting the loop
+$dotnetExists = Get-Command dotnet -ErrorAction SilentlyContinue
+$existingRuntimes = if ($dotnetExists) { & dotnet --list-runtimes } else { "" }
+
+foreach ($dotnetVersion in $dotnetVersions) {
+    Write-Output "--- Processing .NET $($dotnetVersion.Version) ---"
+    try {
+        # FIXED: Refresh the list of installed runtimes at the start of each iteration to ensure the check is always accurate.
+        $existingRuntimes = if (Get-Command dotnet -ErrorAction SilentlyContinue) { & dotnet --list-runtimes } else { "" }
+
+        # This check is now specific to the type of runtime (Hosting vs. Desktop) and uses up-to-date information.
+        if ($existingRuntimes -match "$($dotnetVersion.CheckString) $($dotnetVersion.MajorVersionString)") {
+            Write-Output "[SKIP] .NET $($dotnetVersion.Version) appears to be already installed."
+            continue # Move to the next version in the array
         }
 
-        Write-Output "Installing .NET 8 Hosting Bundle..."
-        $process = Start-Process -Wait -FilePath $hostingBundlePath -ArgumentList "/install /quiet /norestart" -PassThru -ErrorAction Stop
+        $installerPath = Join-Path -Path $downloadDir -ChildPath $dotnetVersion.FileName
         
-        Write-Output "Verifying installed .NET runtimes..."
-        # Refresh environment variables to find the new dotnet.exe
+        # MANUAL DOWNLOAD OVERRIDE: Check if installer exists in C:\Temp first.
+        if (Test-Path -Path $installerPath) {
+            Write-Output "Local .NET $($dotnetVersion.Version) installer found in $downloadDir. Skipping download."
+        }
+        else {
+            Write-Output "Downloading .NET $($dotnetVersion.Version) to $installerPath..."
+            Invoke-WebRequest -Uri $dotnetVersion.Url -OutFile $installerPath -ErrorAction Stop
+        }
+
+        Write-Output "Installing .NET $($dotnetVersion.Version)..."
+        $process = Start-Process -Wait -FilePath $installerPath -ArgumentList "/install /quiet /norestart" -PassThru -ErrorAction Stop
+        
+        # Refresh environment variables and re-check runtimes to verify installation
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-        if (Get-Command dotnet -ErrorAction SilentlyContinue) {
-             & dotnet --list-runtimes
+        $existingRuntimes = if (Get-Command dotnet -ErrorAction SilentlyContinue) { & dotnet --list-runtimes } else { "" }
+
+        if ($existingRuntimes -match "$($dotnetVersion.CheckString) $($dotnetVersion.MajorVersionString)") {
+            Write-Output "Successfully installed .NET $($dotnetVersion.Version)."
         } else {
-            throw ".NET executable not found in PATH after installation. Installer exit code: $($process.ExitCode)"
+            throw ".NET $($dotnetVersion.Version) was not found after installation. Installer exit code: $($process.ExitCode)"
         }
     }
-}
-catch [System.Net.WebException] {
-    Write-Error "A network error occurred while downloading the .NET 8 Hosting Bundle. Error: $_"
-    Write-Error "MANUAL ACTION REQUIRED: Please download the file from this URL: $hostingBundleUrl"
-    Write-Error "Then, place the file ('$hostingBundleFileName') in '$downloadDir' and run this script again."
-}
-catch {
-    Write-Error "Failed to install .NET 8 runtimes. Error: $_"
+    catch [System.Net.WebException] {
+        Write-Error "A network error occurred while downloading the .NET $($dotnetVersion.Version). Error: $_"
+        Write-Error "MANUAL ACTION REQUIRED: Please download the file from this URL: $($dotnetVersion.Url)"
+        Write-Error "Then, place the file ('$($dotnetVersion.FileName)') in '$downloadDir' and run this script again."
+    }
+    catch {
+        Write-Error "Failed to install .NET $($dotnetVersion.Version). Error: $_"
+    }
+    finally {
+         Write-Output "--- Finished processing .NET $($dotnetVersion.Version) ---"
+    }
 }
 Write-Output "--- Section 3: Complete ---"
 Write-Output ""
