@@ -353,8 +353,62 @@ catch {
 
 Write-Output "--- Section 7: Complete ---"
 Write-Output ""
+
+
+#####################################################################
+# 8. DOWNLOAD SUPPORT TOOLS (DOWNLOAD ONLY)
+#####################################################################
+Write-Output "--- Section 8: Downloading Support Tools ---"
+
+# Define the list of support tools to download. Add new tools here.
+$supportTools = @(
+    @{
+        Name = "PuTTY";
+        # Note: PuTTY URLs are version-specific. This may need updating.
+        Url = "https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.83-installer.msi";
+        FileName = "putty-64bit-installer.msi";
+    },
+    @{
+        Name = "WinSCP";
+        Url = "https://winscp.net/download/WinSCP-latest-Setup.exe";
+        FileName = "WinSCP-latest-Setup.exe";
+    },
+    @{
+        Name = "Notepad++";
+        # Note: Notepad++ URLs are version-specific. This may need updating.
+        Url = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.6.8/npp.8.6.8.Installer.x64.exe";
+        FileName = "npp.installer.x64.exe";
+    },
+    @{
+        Name = "mRemoteNG";
+        # Note: mRemoteNG URLs are version-specific. This may need updating.
+        Url = "https://github.com/mRemoteNG/mRemoteNG/releases/download/20250819-v1.78.2-NB-(3137)/mRemoteNG.exe";
+        FileName = "mRemoteNG-Installer.msi";
+    }
+)
+
+foreach ($tool in $supportTools) {
+    Write-Output "--- Processing $($tool.Name) ---"
+    try {
+        $toolPath = Join-Path -Path $downloadDir -ChildPath $tool.FileName
+        
+        if (Test-Path -Path $toolPath) {
+            Write-Output "[SKIP] $($tool.Name) installer already exists in $downloadDir."
+        }
+        else {
+            Write-Output "Downloading $($tool.Name) to $toolPath..."
+            Invoke-WebRequest -Uri $tool.Url -OutFile $toolPath -ErrorAction Stop
+            Write-Output "Successfully downloaded $($tool.Name)."
+        }
+    }
+    catch {
+        Write-Error "Failed to download $($tool.Name). Error: $_"
+    }
+}
+Write-Output "--- Section 8: Complete ---"
+Write-Output ""
+
 Write-Output "--- All setup tasks are complete. ---"
 
 # Stops the transcript, finalizing the log file.
 Stop-Transcript
-
