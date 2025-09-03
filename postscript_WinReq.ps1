@@ -354,7 +354,7 @@ catch {
 Write-Output "--- Section 7: Complete ---"
 Write-Output ""
 
-
+#
 #####################################################################
 # 8. DOWNLOAD SUPPORT TOOLS (DOWNLOAD ONLY)
 #####################################################################
@@ -370,7 +370,7 @@ $supportTools = @(
     },
     @{
         Name = "WinSCP";
-        Url = "https://winscp.net/download/WinSCP-latest-Setup.exe";
+        Url = "https://winscp.net/download/files/20250903092369f8c27e4ce3e523675194586e9460fb/WinSCP-6.5.3-Setup.exe";
         FileName = "WinSCP-latest-Setup.exe";
     },
     @{
@@ -412,3 +412,5 @@ Write-Output "--- All setup tasks are complete. ---"
 
 # Stops the transcript, finalizing the log file.
 Stop-Transcript
+
+
